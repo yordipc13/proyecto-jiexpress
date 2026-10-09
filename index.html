@@ -1,0 +1,253 @@
+<!doctype html>
+<html lang="es">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta
+      name="description"
+      content="JI Express: información y soluciones de transporte y logística."
+    />
+    <meta name="theme-color" content="#123c70"     />
+    <title>JI Express | Transporte y logística</title>
+    <link rel="stylesheet" href="style.css" />
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2" defer></script>
+    <script src="supabase.js" defer></script>
+    <script src="js/script.js" defer></script>
+  </head>
+  <body>
+    <div class="site-shell">
+      <header class="site-header">
+        <a class="brand" href="#inicio" aria-label="JI Express, inicio" data-tab-link="inicio">
+          <img
+            class="brand-mark"
+            src="https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcRndonklgS3Yn9cFRm3AP_8DRMhabAHCRXiYNvRyaHirw&amp;s"
+            alt="Logotipo de JI Express"
+          />
+          <span class="brand-name">JI <strong>EXPRESS</strong></span>
+        </a>
+
+        <div class="header-actions">
+          <span class="header-caption">Transporte que conecta</span>
+          <button
+            class="theme-toggle"
+            type="button"
+            id="theme-toggle"
+            aria-pressed="false"
+            aria-label="Activar modo oscuro"
+          >
+            <span class="theme-icon" aria-hidden="true">☾</span>
+            <span class="theme-label">Modo oscuro</span>
+          </button>
+        </div>
+      </header>
+
+      <nav class="main-nav" aria-label="Navegación principal" role="tablist">
+        <button
+          class="nav-tab is-active"
+          type="button"
+          id="tab-inicio"
+          role="tab"
+          aria-selected="true"
+          aria-controls="panel-inicio"
+          data-tab="inicio"
+        >
+          Inicio
+        </button>
+        <button
+          class="nav-tab"
+          type="button"
+          id="tab-servicios"
+          role="tab"
+          aria-selected="false"
+          aria-controls="panel-servicios"
+          data-tab="servicios"
+          tabindex="-1"
+        >
+          Rastreo
+        </button>
+        <button
+          class="nav-tab"
+          type="button"
+          id="tab-nosotros"
+          role="tab"
+          aria-selected="false"
+          aria-controls="panel-nosotros"
+          data-tab="nosotros"
+          tabindex="-1"
+        >
+          Sección 3
+        </button>
+        <button
+          class="nav-tab"
+          type="button"
+          id="tab-contacto"
+          role="tab"
+          aria-selected="false"
+          aria-controls="panel-contacto"
+          data-tab="contacto"
+          tabindex="-1"
+        >
+          Sección 4
+        </button>
+      </nav>
+
+      <main class="main-content">
+        <section
+          class="tab-panel home-panel"
+          id="panel-inicio"
+          role="tabpanel"
+          aria-labelledby="tab-inicio"
+          tabindex="0"
+          data-panel="inicio"
+        >
+          <div class="hero-copy">
+            <p class="eyebrow"><span></span> JI EXPRESS · TRANSPORTE Y LOGÍSTICA</p>
+            <h1>Movemos lo que <span>más importa.</span></h1>
+            <p class="hero-description">
+              Conectamos destinos y personas con un servicio confiable, atención cercana
+              y soluciones pensadas para cada envío.
+            </p>
+            <a class="primary-link" href="#panel-contacto" data-tab-link="contacto">
+              Conoce más <span aria-hidden="true">→</span>
+            </a>
+          </div>
+
+          <div class="photo-grid" aria-label="Espacios para fotografías de la empresa">
+            <div class="photo-placeholder photo-main">
+              <img
+                class="photo-image"
+                src="https://images.hoy.cr/wp-content/uploads/2025/09/Paquetes-Correos-.jpg"
+                alt="Paquetes preparados para envío"
+              />
+              <span class="photo-caption">JI Express · Envíos y paquetes</span>
+            </div>
+            <div class="photo-placeholder photo-secondary" role="img" aria-label="Espacio para fotografía adicional">
+              <span class="photo-placeholder-icon" aria-hidden="true">＋</span>
+              <span>Fotografía adicional</span>
+              <small>Flota, equipo o servicios</small>
+            </div>
+            <span class="photo-accent" aria-hidden="true"></span>
+          </div>
+
+          <section class="company-info" aria-labelledby="company-title">
+            <div class="section-heading">
+              <p class="eyebrow"><span></span> QUIÉNES SOMOS</p>
+              <h2 id="company-title">Tu aliado en cada trayecto.</h2>
+            </div>
+            <p>
+              En JI Express trabajamos para que tus envíos lleguen a su destino de forma
+              segura y oportuna. Aquí puedes agregar la historia de tu empresa, tus
+              principales servicios y aquello que hace especial a tu equipo.
+            </p>
+          </section>
+        </section>
+
+        <section
+          class="tab-panel temu-panel"
+          id="panel-servicios"
+          role="tabpanel"
+          aria-labelledby="tab-servicios"
+          tabindex="0"
+          data-panel="servicios"
+          hidden
+        >
+          <div class="temu-heading">
+            <p class="eyebrow"><span></span> SEGUIMIENTO DE PEDIDOS</p>
+            <h1>Consulta tu pedido <span>TEMU.</span></h1>
+            <p class="temu-description">
+              Ingresa el código de seguimiento para consultar el estado de tu pedido.
+            </p>
+          </div>
+
+          <div class="temu-card">
+            <label class="temu-label" for="order-code">Código de pedido</label>
+            <div class="temu-search-row">
+              <input
+                class="temu-code-input"
+                id="order-code"
+                name="order-code"
+                type="text"
+                placeholder="Ej. LM00163220901"
+                autocomplete="off"
+                autocapitalize="characters"
+                spellcheck="false"
+                aria-describedby="order-code-help"
+              />
+              <button class="temu-search-button" type="button">
+                Buscar pedido
+              </button>
+            </div>
+            <p class="temu-help" id="order-code-help">
+              Ejemplos: LM00163220901, 2634297728093048 o JCR000001123206.
+            </p>
+
+            <div class="temu-result">
+              Aquí aparecerá el estado de tu pedido.
+            </div>
+          </div>
+        </section>
+        <section
+          class="tab-panel blank-panel"
+          id="panel-nosotros"
+          role="tabpanel"
+          aria-labelledby="tab-nosotros"
+          tabindex="0"
+          data-panel="nosotros"
+          hidden
+        ></section>
+        <section
+          class="tab-panel blank-panel"
+          id="panel-contacto"
+          role="tabpanel"
+          aria-labelledby="tab-contacto"
+          tabindex="0"
+          data-panel="contacto"
+          hidden
+        ></section>
+      </main>
+
+      <footer class="site-footer">
+        <div class="footer-brand">
+          <img
+            class="footer-mark"
+            src="https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcRndonklgS3Yn9cFRm3AP_8DRMhabAHCRXiYNvRyaHirw&amp;s"
+            alt="Logotipo de JI Express"
+          />
+          <div>
+            <strong>JI EXPRESS</strong>
+            <span>Transporte que conecta</span>
+          </div>
+        </div>
+
+        <div class="footer-contact">
+          <span class="footer-heading">Contacto</span>
+          <a href="tel:+50672394578">+506 7239 4578</a>
+          <a href="mailto:fer92vegam@gmail.com">fer92vegam@gmail.com</a>
+        </div>
+
+        <div class="footer-social">
+          <span class="footer-heading">Síguenos</span>
+          <div class="social-links">
+            <a href="https://www.facebook.com/Mandadosturri" aria-label="Facebook de JI Express" target="_blank" rel="noreferrer">f</a>
+            <a href="https://www.instagram.com/" aria-label="Instagram de JI Express" target="_blank" rel="noreferrer">ig</a>
+            <a href="https://www.linkedin.com/" aria-label="LinkedIn de JI Express" target="_blank" rel="noreferrer">in</a>
+          </div>
+        </div>
+
+        <div class="footer-certifications">
+          <span class="footer-heading">Certificaciones</span>
+          <div class="certification-placeholders" aria-label="Espacios para logotipos y certificaciones">
+            <span>LOGO</span>
+            <span>ISO</span>
+          </div>
+        </div>
+
+        <div class="footer-legal">
+          <span>© <span id="current-year"></span> JI Express</span>
+          <a href="#avisos">Aviso de privacidad</a>
+          <a href="#terminos">Términos y condiciones</a>
+        </div>
+      </footer>
+    </div>
+  </body>
+</html>
