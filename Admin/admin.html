@@ -26,10 +26,29 @@
         </a>
         <div class="topbar-divider" aria-hidden="true"></div>
         <p class="topbar-title">Administración</p>
+        <button class="button button-secondary sign-out-button" id="sign-out" type="button" hidden>Cerrar sesión</button>
         <a class="back-link" href="../index.html">Volver al sitio <span aria-hidden="true">↗</span></a>
       </header>
 
-      <main class="workspace">
+      <main class="auth-panel" id="auth-panel">
+        <section class="auth-card" aria-labelledby="auth-title">
+          <p class="eyebrow"><span></span> ACCESO SEGURO</p>
+          <h1 id="auth-title">Administración de envíos</h1>
+          <p class="page-description">Inicia sesión con una cuenta autorizada para continuar.</p>
+          <form id="login-form">
+            <label class="form-field" for="login-email">Correo electrónico
+              <input id="login-email" name="email" type="email" autocomplete="username" required />
+            </label>
+            <label class="form-field" for="login-password">Contraseña
+              <input id="login-password" name="password" type="password" autocomplete="current-password" required />
+            </label>
+            <p class="auth-message" id="auth-message" role="status" aria-live="polite"></p>
+            <button class="button button-primary" id="login-submit" type="submit">Iniciar sesión</button>
+          </form>
+        </section>
+      </main>
+
+      <main class="workspace" id="admin-workspace" hidden>
         <section class="page-heading" aria-labelledby="page-title">
           <div>
             <p class="eyebrow"><span></span> OPERACIONES</p>
@@ -94,7 +113,6 @@
                   <th scope="col">Fecha de creación</th>
                   <th scope="col">Última actualización</th>
                   <th scope="col">Notificación pendiente</th>
-                  <th scope="col">Último estado notificado</th>
                 </tr>
               </thead>
               <tbody id="orders-body"></tbody>
@@ -129,28 +147,12 @@
           <button class="icon-button" id="close-dialog" type="button" aria-label="Cerrar">×</button>
         </div>
         <div class="form-grid">
-          <label class="form-field" for="field-id">ID Excel (automático)<input id="field-id" name="id_excel" readonly /></label>
+          <label class="form-field" for="field-id">ID (automático)<input id="field-id" name="id_excel" readonly /></label>
           <label class="form-field" for="field-tracking">Tracking code<input id="field-tracking" name="tracking_code" required /></label>
           <label class="form-field" for="field-name">Nombre del cliente<input id="field-name" name="cliente_nombre" /></label>
           <label class="form-field" for="field-phone">Teléfono<input id="field-phone" name="cliente_telefono" type="tel" /></label>
           <label class="form-field form-field-wide" for="field-address">Dirección de entrega<input id="field-address" name="direccion_entrega" /></label>
           <label class="form-field" for="field-locality">Localidad<input id="field-locality" name="localidad" /></label>
-          <label class="form-field" for="field-status">Estado<input id="field-status" name="estado" value="empaquetando" required /></label>
-          <label class="form-field" for="field-active">Activo
-            <select id="field-active" name="es_activo">
-              <option value="true">Sí</option>
-              <option value="false">No (historial)</option>
-            </select>
-          </label>
-          <label class="form-field" for="field-created">Fecha de creación<input id="field-created" name="fecha_creacion" readonly /></label>
-          <label class="form-field" for="field-updated">Última actualización<input id="field-updated" name="ultima_actualizacion" readonly /></label>
-          <label class="form-field" for="field-notification">Notificación pendiente
-            <select id="field-notification" name="notificacion_pendiente">
-              <option value="false">No</option>
-              <option value="true">Sí</option>
-            </select>
-          </label>
-          <label class="form-field" for="field-notified-status">Último estado notificado<input id="field-notified-status" name="ultimo_estado_notificado" /></label>
         </div>
         <div class="dialog-actions">
           <button class="button button-secondary" id="cancel-dialog" type="button">Cancelar</button>

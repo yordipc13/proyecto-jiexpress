@@ -10,24 +10,3 @@ if (!window.supabase || typeof window.supabase.createClient !== 'function') {
 } else {
   window.supabaseClient = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 }
-
-window.testSupabaseConnection = async function () {
-  if (!window.supabaseClient) { 
-    throw new Error('Cliente de Supabase no disponible. Verifica el SDK y la configuración.');
-  }
-
-  const response = await fetch(`${SUPABASE_URL}/auth/v1/settings`, {
-    headers: {
-      apikey: SUPABASE_ANON_KEY,
-      Authorization: `Bearer ${SUPABASE_ANON_KEY}`,
-    },
-  });
-
-  if (!response.ok) {
-    const details = await response.text();
-    throw new Error(`Supabase respondió con HTTP ${response.status}: ${details}`);
-  }
-
-  console.info('Conexión con Supabase establecida y clave pública aceptada.');
-  return true;
-};

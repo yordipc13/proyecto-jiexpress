@@ -13,6 +13,12 @@ const contextBackdrop = document.querySelector("#context-backdrop");
 const orderDialog = document.querySelector("#order-dialog");
 const orderForm = document.querySelector("#order-form");
 const excelFile = document.querySelector("#excel-file");
+const authPanel = document.querySelector("#auth-panel");
+const adminWorkspace = document.querySelector("#admin-workspace");
+const loginForm = document.querySelector("#login-form");
+const authMessage = document.querySelector("#auth-message");
+const loginSubmit = document.querySelector("#login-submit");
+const signOutButton = document.querySelector("#sign-out");
 
 function normalize(value) {
   return String(value ?? "")
@@ -51,7 +57,6 @@ function mapDatabaseOrder(row) {
     fecha_creacion: row.fecha_creacion ?? "",
     ultima_actualizacion: row.ultima_actualizacion ?? "",
     notificacion_pendiente: row.notificacion_pendiente ?? false,
-    ultimo_estado_notificado: row.ultimo_estado_notificado ?? "",
   };
 }
 
@@ -62,10 +67,6 @@ function mapFormOrder(formData) {
     cliente_telefono: String(formData.get("cliente_telefono")).trim(),
     direccion_entrega: String(formData.get("direccion_entrega")).trim(),
     locality: String(formData.get("localidad")).trim(),
-    estado_envio: String(formData.get("estado")).trim(),
-    es_activo: formData.get("es_activo") === "true",
-    notificacion_pendiente: formData.get("notificacion_pendiente") === "true",
-    ultimo_estado_notificado: String(formData.get("ultimo_estado_notificado")).trim() || null,
   };
 }
 
@@ -75,7 +76,6 @@ async function loadOrders() {
   renderOrders();
 
   try {
-    await window.supabaseConnection;
     const { data, error } = await window.supabaseClient
       .from("envios")
       .select("*")
@@ -88,8 +88,67 @@ async function loadOrders() {
     loadError = error.message || "Error desconocido al cargar los envíos.";
     showToast(`No se pudieron cargar los envíos: ${loadError}`);
   }
+
   renderOrders();
 }
+
+function showLogin(message = "") {
+  authPanel.hidden = false;
+  adminWorkspace.hidden = true;
+  signOutButton.hidden = true;
+  authMessage.textContent = message;
+  databaseStatus = "Inicia sesión para consultar los envíos";
+  orders = [];
+  renderOrders();
+}
+
+async function startAdminSession(session) {
+  if (session?.user?.app_metadata?.role !== "admin") {
+    await window.supabaseClient.auth.signOut();
+    showLogin("Esta cuenta no tiene permisos de administración.");
+    return;
+  }
+
+  authMessage.textContent = "";
+  authPanel.hidden = true;
+  adminWorkspace.hidden = false;
+  signOutButton.hidden = false;
+  await loadOrders();
+}
+
+loginForm.addEventListener("submit", async (event) => {
+  event.preventDefault();
+  loginSubmit.disabled = true;
+  authMessage.textContent = "";
+  const formData = new FormData(loginForm);
+
+  try {
+    const { data, error } = await window.supabaseClient.auth.signInWithPassword({
+      email: String(formData.get("email")).trim(),
+      password: String(formData.get("password")),
+    });
+    if (error) throw error;
+    await startAdminSession(data.session);
+  } catch (error) {
+    authMessage.textContent = error.message || "No se pudo iniciar sesión.";
+  } finally {
+    loginSubmit.disabled = false;
+  }
+});
+
+signOutButton.addEventListener("click", async () => {
+  signOutButton.disabled = true;
+  try {
+    const { error } = await window.supabaseClient.auth.signOut();
+    if (error) throw error;
+    showLogin("Sesión cerrada.");
+    loginForm.reset();
+  } catch (error) {
+    showToast(`No se pudo cerrar la sesión: ${error.message || "Error desconocido."}`);
+  } finally {
+    signOutButton.disabled = false;
+  }
+});
 
 function renderOrders() {
   const query = normalize(searchInput.value.trim());
@@ -119,7 +178,6 @@ function renderOrders() {
       createCell(formatTimestamp(order.fecha_creacion)),
       createCell(formatTimestamp(order.ultima_actualizacion)),
       createCell(order.notificacion_pendiente),
-      createCell(order.ultimo_estado_notificado),
     );
     ordersBody.append(row);
   }
@@ -172,12 +230,6 @@ function openOrderDialog(order = null) {
   document.querySelector("#field-phone").value = order?.cliente_telefono ?? "";
   document.querySelector("#field-address").value = order?.direccion_entrega ?? "";
   document.querySelector("#field-locality").value = order?.localidad ?? "";
-  document.querySelector("#field-status").value = order?.estado ?? "empaquetando";
-  document.querySelector("#field-active").value = String(order?.es_activo ?? true);
-  document.querySelector("#field-created").value = formatTimestamp(order?.fecha_creacion);
-  document.querySelector("#field-updated").value = formatTimestamp(order?.ultima_actualizacion);
-  document.querySelector("#field-notification").value = String(order?.notificacion_pendiente ?? false);
-  document.querySelector("#field-notified-status").value = order?.ultimo_estado_notificado ?? "";
   orderDialog.showModal();
   document.querySelector("#field-tracking").focus();
 }
@@ -217,7 +269,6 @@ contextMenu.addEventListener("click", async (event) => {
     closeContextMenu();
     if (window.confirm(`¿Borrar el envío ${order.tracking_code}?`)) {
       try {
-        await window.supabaseConnection;
         const { error } = await window.supabaseClient
           .from("envios")
           .delete()
@@ -253,12 +304,11 @@ orderForm.addEventListener("submit", async (event) => {
   const saveButton = orderForm.querySelector('[type="submit"]');
   saveButton.disabled = true;
   try {
-    await window.supabaseConnection;
     let savedOrder;
     if (existingOrder) {
       const { data, error } = await window.supabaseClient
         .from("envios")
-        .update({ ...payload, ultima_actualizacion: new Date().toISOString() })
+        .update(payload)
         .eq("id_excel", existingOrder.id_excel)
         .select("*")
         .single();
@@ -299,7 +349,13 @@ excelFile.addEventListener("change", async () => {
     if (!window.XLSX) throw new Error("No se pudo cargar el lector de Excel. Revisa tu conexión e inténtalo de nuevo.");
     const workbook = window.XLSX.read(await file.arrayBuffer(), { type: "array", cellDates: true });
     const sheet = workbook.Sheets[workbook.SheetNames[0]];
-    const rows = window.XLSX.utils.sheet_to_json(sheet, { header: 1, defval: "", raw: false });
+    const csv = window.XLSX.utils.sheet_to_csv(sheet);
+    const csvWorkbook = window.XLSX.read(csv, { type: "string" });
+    const rows = window.XLSX.utils.sheet_to_json(csvWorkbook.Sheets[csvWorkbook.SheetNames[0]], {
+      header: 1,
+      defval: "",
+      raw: false,
+    });
     const fieldNames = [
       "id_excel",
       "tracking_code",
@@ -307,7 +363,6 @@ excelFile.addEventListener("change", async () => {
       "cliente_telefono",
       "direccion_entrega",
       "localidad",
-      "estado",
     ];
     const aliases = [
       ["id", "idexcel"],
@@ -316,7 +371,6 @@ excelFile.addEventListener("change", async () => {
       ["clientetelefono", "telefonocliente", "telefono"],
       ["direccionentrega", "direccion"],
       ["locality", "localidad"],
-      ["estadoenvio", "estado"],
     ];
     const firstRow = rows[0] ?? [];
     const normalizedHeaders = firstRow.map((value) =>
@@ -347,14 +401,12 @@ excelFile.addEventListener("change", async () => {
         cliente_telefono: String(values[3]).trim(),
         direccion_entrega: String(values[4]).trim(),
         locality: String(values[5]).trim(),
-        estado_envio: String(values[6]).trim() || "empaquetando",
       });
     }
 
     if (!imported.length) {
-      showToast("El archivo no contiene envíos. Revisa las columnas A-G; el ID de A se ignora y Supabase lo genera automáticamente.");
+      showToast("El archivo no contiene envíos. Revisa las columnas A-F; el ID de A se ignora y Supabase lo genera automáticamente.");
     } else {
-      await window.supabaseConnection;
       const { data, error } = await window.supabaseClient
         .from("envios")
         .insert(imported)
@@ -391,4 +443,25 @@ document.addEventListener("keydown", (event) => {
 window.addEventListener("resize", closeContextMenu);
 window.addEventListener("scroll", closeContextMenu, true);
 renderOrders();
-loadOrders();
+
+async function restoreAdminSession() {
+  if (!window.supabaseClient) {
+    showLogin("No se pudo cargar Supabase. Revisa la configuración del cliente.");
+    loginSubmit.disabled = true;
+    return;
+  }
+
+  try {
+    const { data, error } = await window.supabaseClient.auth.getSession();
+    if (error) throw error;
+    if (data.session) {
+      await startAdminSession(data.session);
+    } else {
+      showLogin();
+    }
+  } catch (error) {
+    showLogin(`No se pudo verificar la sesión: ${error.message || "Error desconocido."}`);
+  }
+}
+
+restoreAdminSession();
