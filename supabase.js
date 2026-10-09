@@ -12,7 +12,7 @@ if (!window.supabase || typeof window.supabase.createClient !== 'function') {
 }
 
 window.testSupabaseConnection = async function () {
-  if (!window.supabaseClient) {
+  if (!window.supabaseClient) { 
     throw new Error('Cliente de Supabase no disponible. Verifica el SDK y la configuración.');
   }
 
