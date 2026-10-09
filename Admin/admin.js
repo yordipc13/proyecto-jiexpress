@@ -19,6 +19,17 @@ const loginForm = document.querySelector("#login-form");
 const authMessage = document.querySelector("#auth-message");
 const loginSubmit = document.querySelector("#login-submit");
 const signOutButton = document.querySelector("#sign-out");
+const usersButton = document.querySelector("#show-admin-users");
+const usersDialog = document.querySelector("#users-dialog");
+const usersBody = document.querySelector("#admin-users-body");
+const usersMessage = document.querySelector("#users-message");
+let currentAdminUser = null;
+let presenceInterval = null;
+let usersRefreshInterval = null;
+let presenceUpdateInProgress = false;
+let presenceTrackingEnabled = false;
+const ONLINE_WINDOW_MS = 90_000;
+const PRESENCE_INTERVAL_MS = 30_000;
 
 function normalize(value) {
   return String(value ?? "")
@@ -113,8 +124,112 @@ async function startAdminSession(session) {
   authPanel.hidden = true;
   adminWorkspace.hidden = false;
   signOutButton.hidden = false;
+  usersButton.hidden = false;
+  currentAdminUser = session.user;
   await loadOrders();
+  try {
+    await updateAdminPresence();
+    await loadAdminUsers();
+    presenceTrackingEnabled = true;
+  } catch (error) {
+    presenceTrackingEnabled = false;
+    showToast(`No se pudo registrar la presencia: ${error.message || "Revisa la tabla admin_presence y sus políticas."}`);
+  }
+  window.clearInterval(presenceInterval);
+  presenceInterval = window.setInterval(() => {
+    if (!presenceTrackingEnabled) return;
+    updateAdminPresence().catch((error) => {
+      presenceTrackingEnabled = false;
+      showToast(`No se pudo actualizar la presencia: ${error.message || "Error desconocido."}`);
+    });
+  }, PRESENCE_INTERVAL_MS);
+  window.clearInterval(usersRefreshInterval);
+  usersRefreshInterval = window.setInterval(() => {
+    if (!usersDialog.open) return;
+    loadAdminUsers().catch((error) => {
+      usersMessage.textContent = `No se pudieron cargar los usuarios: ${error.message || "Error desconocido."}`;
+    });
+  }, PRESENCE_INTERVAL_MS);
 }
+
+async function updateAdminPresence() {
+  if (!currentAdminUser || presenceUpdateInProgress) return;
+  presenceUpdateInProgress = true;
+  try {
+    const { error } = await window.supabaseClient
+      .from("admin_presence")
+      .upsert({
+        user_id: currentAdminUser.id,
+        email: currentAdminUser.email,
+        last_seen_at: new Date().toISOString(),
+      }, { onConflict: "user_id" });
+    if (error) throw error;
+  } finally {
+    presenceUpdateInProgress = false;
+  }
+}
+
+async function loadAdminUsers() {
+  usersMessage.textContent = "";
+  const { data, error } = await window.supabaseClient
+    .from("admin_presence")
+    .select("user_id,email,last_seen_at")
+    .order("email", { ascending: true });
+  if (error) throw error;
+
+  usersBody.replaceChildren();
+  if (!data.length) {
+    const row = document.createElement("tr");
+    const cell = document.createElement("td");
+    cell.colSpan = 3;
+    cell.className = "users-empty";
+    cell.textContent = "No hay usuarios permitidos. Revisa los roles admin y ejecuta la sincronización SQL.";
+    row.append(cell);
+    usersBody.append(row);
+    return;
+  }
+
+  const now = Date.now();
+  for (const user of data) {
+    const isOnline = user.last_seen_at && now - new Date(user.last_seen_at).getTime() <= ONLINE_WINDOW_MS;
+    const row = document.createElement("tr");
+    const emailCell = document.createElement("td");
+    emailCell.textContent = user.email;
+    const statusCell = document.createElement("td");
+    const status = document.createElement("span");
+    status.className = `user-status${isOnline ? " is-online" : ""}`;
+    status.textContent = isOnline ? "Conectado" : "Desconectado";
+    statusCell.append(status);
+    const lastSeenCell = document.createElement("td");
+    lastSeenCell.textContent = user.last_seen_at
+      ? formatTimestamp(user.last_seen_at)
+      : "Sin conexión registrada";
+    row.append(emailCell, statusCell, lastSeenCell);
+    usersBody.append(row);
+  }
+}
+
+usersButton.addEventListener("click", async () => {
+  usersDialog.showModal();
+  try {
+    await loadAdminUsers();
+  } catch (error) {
+    usersMessage.textContent = `No se pudieron cargar los usuarios: ${error.message || "Error desconocido."}`;
+  }
+});
+
+document.querySelector("#close-users-dialog").addEventListener("click", () => usersDialog.close());
+document.querySelector("#refresh-admin-users").addEventListener("click", async (event) => {
+  const button = event.currentTarget;
+  button.disabled = true;
+  try {
+    await loadAdminUsers();
+  } catch (error) {
+    usersMessage.textContent = `No se pudieron cargar los usuarios: ${error.message || "Error desconocido."}`;
+  } finally {
+    button.disabled = false;
+  }
+});
 
 loginForm.addEventListener("submit", async (event) => {
   event.preventDefault();
@@ -141,6 +256,14 @@ signOutButton.addEventListener("click", async () => {
   try {
     const { error } = await window.supabaseClient.auth.signOut();
     if (error) throw error;
+    window.clearInterval(presenceInterval);
+    window.clearInterval(usersRefreshInterval);
+    presenceInterval = null;
+    usersRefreshInterval = null;
+    presenceTrackingEnabled = false;
+    currentAdminUser = null;
+    usersDialog.close();
+    usersButton.hidden = true;
     showLogin("Sesión cerrada.");
     loginForm.reset();
   } catch (error) {

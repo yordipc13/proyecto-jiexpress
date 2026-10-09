@@ -26,8 +26,11 @@
         </a>
         <div class="topbar-divider" aria-hidden="true"></div>
         <p class="topbar-title">Administración</p>
-        <button class="button button-secondary sign-out-button" id="sign-out" type="button" hidden>Cerrar sesión</button>
-        <a class="back-link" href="../index.html">Volver al sitio <span aria-hidden="true">↗</span></a>
+        <div class="topbar-actions">
+          <button class="button button-secondary users-button" id="show-admin-users" type="button" hidden>Usuarios</button>
+          <button class="button button-secondary sign-out-button" id="sign-out" type="button" hidden>Cerrar sesión</button>
+          <a class="back-link" href="../index.html">Volver al sitio <span aria-hidden="true">↗</span></a>
+        </div>
       </header>
 
       <main class="auth-panel" id="auth-panel">
@@ -159,6 +162,35 @@
           <button class="button button-primary" type="submit">Guardar envío</button>
         </div>
       </form>
+    </dialog>
+
+    <dialog class="users-dialog" id="users-dialog" aria-labelledby="users-dialog-title">
+      <div class="users-dialog-content">
+        <div class="dialog-heading">
+          <div>
+            <p class="eyebrow"><span></span> ACCESO</p>
+            <h2 id="users-dialog-title">Usuarios permitidos</h2>
+          </div>
+          <button class="icon-button" id="close-users-dialog" type="button" aria-label="Cerrar">×</button>
+        </div>
+        <p class="users-description">Se considera conectado si hay actividad en los últimos 90 segundos.</p>
+        <p class="users-message" id="users-message" role="status" aria-live="polite"></p>
+        <div class="users-table-viewport">
+          <table class="users-table">
+            <thead>
+              <tr>
+                <th scope="col">Correo</th>
+                <th scope="col">Estado</th>
+                <th scope="col">Última conexión</th>
+              </tr>
+            </thead>
+            <tbody id="admin-users-body"></tbody>
+          </table>
+        </div>
+        <div class="dialog-actions">
+          <button class="button button-secondary" id="refresh-admin-users" type="button">Actualizar</button>
+        </div>
+      </div>
     </dialog>
 
     <div class="toast" id="toast" role="status" aria-live="polite"></div>
