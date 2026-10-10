@@ -4,7 +4,7 @@
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <meta name="theme-color" content="#f3f6f8" />
-    <title>Administración de envíos | JI Express</title>
+    <title>Administración de envíos | JL Express</title>
     <link rel="preconnect" href="https://fonts.googleapis.com" />
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
     <link
@@ -20,13 +20,21 @@
   <body>
     <div class="admin-shell">
       <header class="topbar">
-        <a class="brand" href="../index.html" aria-label="JI Express, página principal">
-          <span class="brand-mark" aria-hidden="true">JI</span>
-          <span class="brand-name">JI <strong>EXPRESS</strong></span>
+        <a class="brand" href="../index.html" aria-label="JL Express, página principal">
+          <img
+            class="brand-mark"
+            src="https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcRndonklgS3Yn9cFRm3AP_8DRMhabAHCRXiYNvRyaHirw&amp;s"
+            alt=""
+          />
+          <span class="brand-name">JL <strong>EXPRESS</strong></span>
         </a>
         <div class="topbar-divider" aria-hidden="true"></div>
         <p class="topbar-title">Administración</p>
         <div class="topbar-actions">
+          <button class="button button-secondary theme-toggle" id="theme-toggle" type="button" aria-pressed="false" aria-label="Activar modo oscuro">
+            <span class="theme-icon" aria-hidden="true">☾</span>
+            <span class="theme-label">Modo oscuro</span>
+          </button>
           <button class="button button-secondary users-button" id="show-admin-users" type="button" hidden>Usuarios</button>
           <button class="button button-secondary sign-out-button" id="sign-out" type="button" hidden>Cerrar sesión</button>
           <a class="back-link" href="../index.html">Volver al sitio <span aria-hidden="true">↗</span></a>
@@ -56,7 +64,7 @@
           <div>
             <p class="eyebrow"><span></span> OPERACIONES</p>
             <h1 id="page-title">Envíos</h1>
-            <p class="page-description">Consulta y administra los envíos de JI Express.</p>
+            <p class="page-description">Consulta y administra los envíos de JL Express.</p>
           </div>
           <div class="order-count" aria-live="polite">
             <span class="count-dot" aria-hidden="true"></span>
@@ -73,6 +81,9 @@
               <button class="button button-secondary" id="import-orders" type="button" title="El ID de la columna A se ignora; Supabase genera id_excel automáticamente.">
                 <span class="button-icon import-icon" aria-hidden="true">↑</span> Importar Excel
               </button>
+              <button class="button button-secondary refresh-button" id="refresh-orders" type="button" title="Actualizar la tabla desde Supabase">
+                <span class="button-icon" aria-hidden="true">↻</span> Actualizar
+              </button>
               <input id="excel-file" type="file" accept=".xlsx,.xls,.csv" hidden />
             </div>
             <div class="toolbar-filters">
@@ -81,7 +92,7 @@
                 <input
                   id="order-search"
                   type="search"
-                  placeholder="Buscar en todos los envíos..."
+                  placeholder="Buscar por ID, tracking, cliente, teléfono, dirección o localidad..."
                   autocomplete="off"
                   aria-label="Buscar en todos los envíos"
                 />
@@ -105,17 +116,17 @@
             <table>
               <thead>
                 <tr>
-                  <th scope="col">ID Excel</th>
-                  <th scope="col">Tracking code</th>
-                  <th scope="col">Cliente</th>
-                  <th scope="col">Teléfono</th>
-                  <th scope="col">Dirección de entrega</th>
-                  <th scope="col">Localidad</th>
-                  <th scope="col">Estado</th>
-                  <th scope="col">Activo</th>
-                  <th scope="col">Fecha de creación</th>
-                  <th scope="col">Última actualización</th>
-                  <th scope="col">Notificación pendiente</th>
+                  <th scope="col" aria-sort="ascending"><button class="sort-button" type="button" data-sort="id_excel">ID Excel</button></th>
+                  <th scope="col" aria-sort="none"><button class="sort-button" type="button" data-sort="tracking_code">Tracking code</button></th>
+                  <th scope="col" aria-sort="none"><button class="sort-button" type="button" data-sort="cliente_nombre">Cliente</button></th>
+                  <th scope="col" aria-sort="none"><button class="sort-button" type="button" data-sort="cliente_telefono">Teléfono</button></th>
+                  <th scope="col" aria-sort="none"><button class="sort-button" type="button" data-sort="direccion_entrega">Dirección de entrega</button></th>
+                  <th scope="col" aria-sort="none"><button class="sort-button" type="button" data-sort="localidad">Localidad</button></th>
+                  <th scope="col" aria-sort="none"><button class="sort-button" type="button" data-sort="estado">Estado</button></th>
+                  <th scope="col" aria-sort="none"><button class="sort-button" type="button" data-sort="es_activo">Activo</button></th>
+                  <th scope="col" aria-sort="none"><button class="sort-button" type="button" data-sort="fecha_creacion">Fecha de creación</button></th>
+                  <th scope="col" aria-sort="none"><button class="sort-button" type="button" data-sort="ultima_actualizacion">Última actualización</button></th>
+                  <th scope="col" aria-sort="none"><button class="sort-button" type="button" data-sort="notificacion_pendiente">Notificación pendiente</button></th>
                 </tr>
               </thead>
               <tbody id="orders-body"></tbody>
@@ -127,7 +138,7 @@
             </div>
           </div>
           <div class="table-footer">
-            <span>JI Express <span aria-hidden="true">·</span> Gestión de envíos</span>
+            <span>JL Express <span aria-hidden="true">·</span> Gestión de envíos</span>
             <span id="table-summary">Datos de demostración</span>
           </div>
         </section>

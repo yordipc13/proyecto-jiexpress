@@ -4,6 +4,8 @@ let editingOrderId = null;
 let toastTimeout;
 let databaseStatus = "Conectando con Supabase…";
 let loadError = "";
+let sortField = "id_excel";
+let sortDirection = "asc";
 
 const ordersBody = document.querySelector("#orders-body");
 const searchInput = document.querySelector("#order-search");
@@ -19,6 +21,8 @@ const loginForm = document.querySelector("#login-form");
 const authMessage = document.querySelector("#auth-message");
 const loginSubmit = document.querySelector("#login-submit");
 const signOutButton = document.querySelector("#sign-out");
+const refreshOrdersButton = document.querySelector("#refresh-orders");
+const themeToggle = document.querySelector("#theme-toggle");
 const usersButton = document.querySelector("#show-admin-users");
 const usersDialog = document.querySelector("#users-dialog");
 const usersBody = document.querySelector("#admin-users-body");
@@ -30,6 +34,41 @@ let presenceUpdateInProgress = false;
 let presenceTrackingEnabled = false;
 const ONLINE_WINDOW_MS = 90_000;
 const PRESENCE_INTERVAL_MS = 30_000;
+const ORDER_SEARCH_FIELDS = [
+  "id_excel",
+  "tracking_code",
+  "cliente_nombre",
+  "cliente_telefono",
+  "direccion_entrega",
+  "localidad",
+];
+
+function setDarkMode(enabled) {
+  document.body.classList.toggle("dark-mode", enabled);
+  themeToggle.setAttribute("aria-pressed", String(enabled));
+  themeToggle.setAttribute("aria-label", enabled ? "Activar modo claro" : "Activar modo oscuro");
+  themeToggle.querySelector(".theme-icon").textContent = enabled ? "☀" : "☾";
+  themeToggle.querySelector(".theme-label").textContent = enabled ? "Modo claro" : "Modo oscuro";
+}
+
+let savedTheme = null;
+try {
+  savedTheme = window.localStorage.getItem("ji-express-theme");
+} catch (error) {
+  console.warn("No se pudo leer la preferencia del tema guardada.", error);
+}
+
+setDarkMode(savedTheme === "dark");
+
+themeToggle.addEventListener("click", () => {
+  const enabled = !document.body.classList.contains("dark-mode");
+  setDarkMode(enabled);
+  try {
+    window.localStorage.setItem("ji-express-theme", enabled ? "dark" : "light");
+  } catch (error) {
+    console.warn("No se pudo guardar la preferencia del tema.", error);
+  }
+});
 
 function normalize(value) {
   return String(value ?? "")
@@ -90,18 +129,32 @@ async function loadOrders() {
     const { data, error } = await window.supabaseClient
       .from("envios")
       .select("*")
-      .order("id_excel", { ascending: false });
+      .order("id_excel", { ascending: true });
     if (error) throw error;
     orders = data.map(mapDatabaseOrder);
     databaseStatus = "Conectado a Supabase";
+    renderOrders();
+    return true;
   } catch (error) {
     databaseStatus = "Error al cargar desde Supabase";
     loadError = error.message || "Error desconocido al cargar los envíos.";
     showToast(`No se pudieron cargar los envíos: ${loadError}`);
+    renderOrders();
+    return false;
   }
-
-  renderOrders();
 }
+
+refreshOrdersButton.addEventListener("click", async () => {
+  refreshOrdersButton.disabled = true;
+  refreshOrdersButton.setAttribute("aria-busy", "true");
+  try {
+    const refreshed = await loadOrders();
+    if (refreshed) showToast("Tabla actualizada desde Supabase.");
+  } finally {
+    refreshOrdersButton.disabled = false;
+    refreshOrdersButton.removeAttribute("aria-busy");
+  }
+});
 
 function showLogin(message = "") {
   authPanel.hidden = false;
@@ -278,9 +331,9 @@ function renderOrders() {
   const selectedView = viewSelect.value;
   const visibleOrders = orders.filter((order) => {
     const matchesView = (selectedView === "active") === order.es_activo;
-    const matchesSearch = !query || Object.values(order).some((value) => normalize(value).includes(query));
+    const matchesSearch = matchesOrderSearch(order, query);
     return matchesView && matchesSearch;
-  });
+  }).sort(compareOrders);
 
   ordersBody.replaceChildren();
   for (const order of visibleOrders) {
@@ -315,6 +368,65 @@ function renderOrders() {
       ? "Intenta con otro nombre, teléfono, tracking code o localidad."
       : "No hay envíos en esta vista.";
   document.querySelector("#table-summary").textContent = databaseStatus;
+  updateSortIndicators();
+}
+
+function compareOrders(left, right) {
+  const leftValue = left[sortField];
+  const rightValue = right[sortField];
+  let result;
+
+  if (sortField === "id_excel") {
+    result = Number(leftValue) - Number(rightValue);
+  } else if (sortField === "fecha_creacion" || sortField === "ultima_actualizacion") {
+    const leftTime = leftValue ? new Date(leftValue).getTime() : Number.NEGATIVE_INFINITY;
+    const rightTime = rightValue ? new Date(rightValue).getTime() : Number.NEGATIVE_INFINITY;
+    result = leftTime - rightTime;
+    if (Number.isNaN(result)) result = String(leftValue ?? "").localeCompare(String(rightValue ?? ""), "es", { numeric: true, sensitivity: "base" });
+  } else if (typeof leftValue === "boolean" || typeof rightValue === "boolean") {
+    result = Number(Boolean(leftValue)) - Number(Boolean(rightValue));
+  } else {
+    result = String(leftValue ?? "").localeCompare(String(rightValue ?? ""), "es", {
+      numeric: true,
+      sensitivity: "base",
+    });
+  }
+
+  return sortDirection === "asc" ? result : -result;
+}
+
+function updateSortIndicators() {
+  for (const button of document.querySelectorAll("thead button[data-sort]")) {
+    const header = button.closest("th");
+    const isSorted = button.dataset.sort === sortField;
+    header.setAttribute("aria-sort", isSorted
+      ? sortDirection === "asc" ? "ascending" : "descending"
+      : "none");
+  }
+}
+
+document.querySelector("thead").addEventListener("click", (event) => {
+  const button = event.target.closest("button[data-sort]");
+  if (!button) return;
+
+  if (button.dataset.sort === sortField) {
+    sortDirection = sortDirection === "asc" ? "desc" : "asc";
+  } else {
+    sortField = button.dataset.sort;
+    sortDirection = "asc";
+  }
+  renderOrders();
+});
+
+function matchesOrderSearch(order, query) {
+  const idQuery = query.match(/^id\s*(\d+)$/);
+  if (idQuery) {
+    return normalize(order.id_excel) === idQuery[1];
+  }
+
+  return !query || ORDER_SEARCH_FIELDS.some((field) =>
+    normalize(order[field]).includes(query)
+  );
 }
 
 function closeContextMenu() {

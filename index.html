@@ -5,10 +5,10 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <meta
       name="description"
-      content="JI Express: información y soluciones de transporte y logística."
+      content="JL Express: información y soluciones de transporte y logística."
     />
     <meta name="theme-color" content="#123c70"     />
-    <title>JI Express | Transporte y logística</title>
+    <title>JL Express | Transporte y logística</title>
     <link rel="stylesheet" href="style.css" />
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2" defer></script>
     <script src="supabase.js" defer></script>
@@ -17,13 +17,13 @@
   <body>
     <div class="site-shell">
       <header class="site-header">
-        <a class="brand" href="#inicio" aria-label="JI Express, inicio" data-tab-link="inicio">
+        <a class="brand" href="#inicio" aria-label="JL Express, inicio" data-tab-link="inicio">
           <img
             class="brand-mark"
             src="https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcRndonklgS3Yn9cFRm3AP_8DRMhabAHCRXiYNvRyaHirw&amp;s"
-            alt="Logotipo de JI Express"
+            alt="Logotipo de JL Express"
           />
-          <span class="brand-name">JI <strong>EXPRESS</strong></span>
+          <span class="brand-name">JL <strong>EXPRESS</strong></span>
         </a>
 
         <div class="header-actions">
@@ -101,7 +101,7 @@
           data-panel="inicio"
         >
           <div class="hero-copy">
-            <p class="eyebrow"><span></span> JI EXPRESS · TRANSPORTE Y LOGÍSTICA</p>
+            <p class="eyebrow"><span></span> JL EXPRESS · TRANSPORTE Y LOGÍSTICA</p>
             <h1>Movemos lo que <span>más importa.</span></h1>
             <p class="hero-description">
               Conectamos destinos y personas con un servicio confiable, atención cercana
@@ -119,7 +119,7 @@
                 src="https://images.hoy.cr/wp-content/uploads/2025/09/Paquetes-Correos-.jpg"
                 alt="Paquetes preparados para envío"
               />
-              <span class="photo-caption">JI Express · Envíos y paquetes</span>
+              <span class="photo-caption">JL Express · Envíos y paquetes</span>
             </div>
             <div class="photo-placeholder photo-secondary" role="img" aria-label="Espacio para fotografía adicional">
               <span class="photo-placeholder-icon" aria-hidden="true">＋</span>
@@ -135,7 +135,7 @@
               <h2 id="company-title">Tu aliado en cada trayecto.</h2>
             </div>
             <p>
-              En JI Express trabajamos para que tus envíos lleguen a su destino de forma
+              En JL Express trabajamos para que tus envíos lleguen a su destino de forma
               segura y oportuna. Aquí puedes agregar la historia de tu empresa, tus
               principales servicios y aquello que hace especial a tu equipo.
             </p>
@@ -159,7 +159,7 @@
             </p>
           </div>
 
-          <div class="temu-card">
+          <form class="temu-card" id="tracking-form">
             <label class="temu-label" for="order-code">Código de pedido</label>
             <div class="temu-search-row">
               <input
@@ -172,8 +172,9 @@
                 autocapitalize="characters"
                 spellcheck="false"
                 aria-describedby="order-code-help"
+                required
               />
-              <button class="temu-search-button" type="button">
+              <button class="temu-search-button" type="submit">
                 Buscar pedido
               </button>
             </div>
@@ -181,10 +182,10 @@
               Ejemplos: LM00163220901, 2634297728093048 o JCR000001123206.
             </p>
 
-            <div class="temu-result">
+            <div class="temu-result" id="tracking-result" role="status" aria-live="polite" aria-atomic="true">
               Aquí aparecerá el estado de tu pedido.
             </div>
-          </div>
+          </form>
         </section>
         <section
           class="tab-panel blank-panel"
@@ -211,10 +212,10 @@
           <img
             class="footer-mark"
             src="https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcRndonklgS3Yn9cFRm3AP_8DRMhabAHCRXiYNvRyaHirw&amp;s"
-            alt="Logotipo de JI Express"
+            alt="Logotipo de JL Express"
           />
           <div>
-            <strong>JI EXPRESS</strong>
+            <strong>JL EXPRESS</strong>
             <span>Transporte que conecta</span>
           </div>
         </div>
@@ -228,9 +229,9 @@
         <div class="footer-social">
           <span class="footer-heading">Síguenos</span>
           <div class="social-links">
-            <a href="https://www.facebook.com/Mandadosturri" aria-label="Facebook de JI Express" target="_blank" rel="noreferrer">f</a>
-            <a href="https://www.instagram.com/" aria-label="Instagram de JI Express" target="_blank" rel="noreferrer">ig</a>
-            <a href="https://www.linkedin.com/" aria-label="LinkedIn de JI Express" target="_blank" rel="noreferrer">in</a>
+            <a href="https://www.facebook.com/Mandadosturri" aria-label="Facebook de JL Express" target="_blank" rel="noreferrer">f</a>
+            <a href="https://www.instagram.com/" aria-label="Instagram de JL Express" target="_blank" rel="noreferrer">ig</a>
+            <a href="https://www.linkedin.com/" aria-label="LinkedIn de JL Express" target="_blank" rel="noreferrer">in</a>
           </div>
         </div>
 
@@ -243,7 +244,7 @@
         </div>
 
         <div class="footer-legal">
-          <span>© <span id="current-year"></span> JI Express</span>
+          <span>© <span id="current-year"></span> JL Express</span>
           <a href="#avisos">Aviso de privacidad</a>
           <a href="#terminos">Términos y condiciones</a>
         </div>
